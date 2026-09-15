@@ -15,6 +15,8 @@
     --text:#eef2fb;
     --text-dim:#93a1c2;
     --green:#37d67a;
+    --blue:#5b9bff;
+    --silver:#c7d0e0;
   }
   *{box-sizing:border-box;}
   body{
@@ -26,6 +28,7 @@
   }
   .wrap{max-width:1100px;margin:0 auto;}
   header{text-align:center;margin-bottom:32px;}
+  header .logo{height:64px;margin-bottom:12px;}
   header .eyebrow{
     color:var(--gold);
     letter-spacing:.14em;
@@ -111,20 +114,22 @@
 
   .stats{
     display:grid;
-    grid-template-columns:repeat(4,1fr);
+    grid-template-columns:repeat(4,minmax(0,1fr));
     gap:12px;
     margin-bottom:16px;
   }
   @media (max-width:600px){ .stats{grid-template-columns:1fr 1fr;} }
+  @media (max-width:700px){ .revenue-card .stats{grid-template-columns:repeat(2,minmax(0,1fr));} }
   .stat{
     background:var(--panel-2);
     border:1px solid var(--line);
     border-radius:12px;
-    padding:16px 12px;
+    padding:16px 8px;
     text-align:center;
+    min-width:0;
   }
   .stat .label{font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
-  .stat .amount{font-size:clamp(18px,2.4vw,24px);font-weight:800;color:var(--green);font-variant-numeric:tabular-nums;}
+  .stat .amount{font-size:clamp(15px,2.1vw,24px);font-weight:800;color:var(--green);font-variant-numeric:tabular-nums;overflow-wrap:break-word;}
 
   .breakdown{
     border-top:1px solid var(--line);
@@ -138,12 +143,27 @@
   .breakdown div{font-size:13px;color:var(--text-dim);}
   .breakdown div b{display:block;color:var(--text);font-size:16px;margin-top:2px;font-variant-numeric:tabular-nums;}
 
+  .revenue-card{margin-top:20px;}
+  .revenue-card h2{display:flex;align-items:center;justify-content:space-between;}
+  .split-label{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--text-dim);
+    margin:16px 0 10px;
+  }
+  .split-label:first-of-type{margin-top:0;}
+  .split-label b{color:var(--text);text-transform:none;letter-spacing:0;font-size:13px;}
+  .stat.silver .amount{color:var(--silver);}
+  .stat.blue .amount{color:var(--blue);}
+
   footer{text-align:center;color:var(--text-dim);font-size:12px;margin-top:32px;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
+    <img class="logo" src="logo.png" alt="World Sky Travel Club">
     <div class="eyebrow">World Sky Travel Club</div>
     <h1>Casino Revenue Share Calculator</h1>
     <p>Change any number below. Every result updates right away.</p>
@@ -193,6 +213,26 @@
         <div>Closed sales / month<b id="outSales"></b></div>
         <div>Gross sales / month<b id="outGross"></b></div>
       </div>
+    </div>
+  </div>
+
+  <div class="card revenue-card">
+    <h2>World Sky Travel Club Revenue</h2>
+
+    <div class="split-label">Gross revenue <b>— total tour sales, before the casino's cut</b></div>
+    <div class="stats">
+      <div class="stat silver"><div class="label">Daily</div><div class="amount" id="wsGrossDaily"></div></div>
+      <div class="stat silver"><div class="label">Weekly</div><div class="amount" id="wsGrossWeekly"></div></div>
+      <div class="stat silver"><div class="label">Monthly</div><div class="amount" id="wsGrossMonthly"></div></div>
+      <div class="stat silver"><div class="label">Annual</div><div class="amount" id="wsGrossAnnual"></div></div>
+    </div>
+
+    <div class="split-label">Net revenue <b>— what World Sky keeps after paying the casino</b></div>
+    <div class="stats" style="margin-bottom:0;">
+      <div class="stat blue"><div class="label">Daily</div><div class="amount" id="wsNetDaily"></div></div>
+      <div class="stat blue"><div class="label">Weekly</div><div class="amount" id="wsNetWeekly"></div></div>
+      <div class="stat blue"><div class="label">Monthly</div><div class="amount" id="wsNetMonthly"></div></div>
+      <div class="stat blue"><div class="label">Annual</div><div class="amount" id="wsNetAnnual"></div></div>
     </div>
   </div>
 
@@ -271,6 +311,24 @@ function calc(){
   document.getElementById('outTours').textContent = int(monthlyTours);
   document.getElementById('outSales').textContent = int(monthlySales);
   document.getElementById('outGross').textContent = money(grossMonthly);
+
+  const netMonthly = grossMonthly - monthlyCasino;
+  const annualGross = grossMonthly * 12;
+  const weeklyGross = annualGross / 52;
+  const dailyGross = grossMonthly / days;
+  const annualNet = netMonthly * 12;
+  const weeklyNet = annualNet / 52;
+  const dailyNet = netMonthly / days;
+
+  document.getElementById('wsGrossDaily').textContent = money(dailyGross);
+  document.getElementById('wsGrossWeekly').textContent = money(weeklyGross);
+  document.getElementById('wsGrossMonthly').textContent = money(grossMonthly);
+  document.getElementById('wsGrossAnnual').textContent = money(annualGross);
+
+  document.getElementById('wsNetDaily').textContent = money(dailyNet);
+  document.getElementById('wsNetWeekly').textContent = money(weeklyNet);
+  document.getElementById('wsNetMonthly').textContent = money(netMonthly);
+  document.getElementById('wsNetAnnual').textContent = money(annualNet);
 
   const preset = matchingPreset({toursPerDay,conversion,price,share,days});
   setPresetActive(preset);
